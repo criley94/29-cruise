@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>29th Company Cruise</title>
+<meta name="description" content="USNA Class of 1994, 29th Company. Late August 2027. Pick a trip.">
+<meta property="og:title" content="29th Company Cruise">
+<meta property="og:description" content="Late August 2027. Go Hard '94!">
+<link rel="icon" href="img/crest.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0B2545;
+  --deep:#071a33;
+  --gold:#D4AF37;
+  --sea:#1D4E89;
+  --white:#FFFFFF;
+  --mist:#E8EDF3;
+  --gray:#52606D;
+  --display:'Barlow Condensed','Arial Narrow',Arial,sans-serif;
+  --body:'Barlow',Arial,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--white);color:var(--navy);font-family:var(--body);font-size:18px;line-height:1.45;-webkit-text-size-adjust:100%}
+img{display:block;max-width:100%}
+h1,h2,h3,p,fieldset,legend{margin:0;padding:0;border:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.wrap{width:min(1120px,100%);margin:0 auto;padding:0 28px}
+
+/* Top */
+.top{background:var(--navy);color:var(--white);padding:40px 0 170px}
+.top .wrap{display:grid;grid-template-columns:auto 1fr;gap:36px;align-items:center}
+.crest{width:190px;height:190px}
+.class{font-size:19px;font-weight:600;color:var(--gold)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(58px,10.2vw,124px);line-height:.92;letter-spacing:-.005em;margin-top:6px}
+.tag{font-size:clamp(19px,2.4vw,24px);font-weight:500;margin-top:12px}
+
+/* Trips */
+.trips{margin-top:-130px;position:relative}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.shot{position:relative;aspect-ratio:4/3;overflow:hidden;background:var(--sea);border-bottom:6px solid var(--gold)}
+.shot img{width:100%;height:100%;object-fit:cover}
+.shot h2{position:absolute;left:16px;bottom:8px;font-family:var(--display);font-weight:700;font-size:58px;line-height:1;color:var(--white);text-shadow:0 2px 14px rgba(7,26,51,.75)}
+.trip .ship{font-size:22px;font-weight:700;margin-top:16px}
+.trip .when{margin-top:2px}
+.trip .stops{color:var(--gray);font-size:16px;line-height:1.4;margin-top:10px;min-height:2.8em}
+.trip .price{margin-top:12px;font-size:16px;font-weight:500;color:var(--gray)}
+.trip .price b{display:block;font-family:var(--display);font-weight:700;font-size:44px;line-height:1.05;color:var(--navy)}
+.why{font-size:clamp(22px,3vw,29px);line-height:1.3;font-weight:500;max-width:30em;margin:48px 0 0}
+.go{display:inline-block;margin-top:24px;background:var(--gold);color:var(--navy);font-weight:700;font-size:20px;padding:15px 34px;text-decoration:none}
+.go:hover{background:#e3c04b}
+
+/* Poll */
+.poll{background:var(--navy);color:var(--white);margin-top:64px;padding:60px 0 68px}
+.poll h2{font-family:var(--display);font-weight:700;font-size:clamp(44px,7vw,72px);line-height:1}
+.poll .lead{max-width:34em;margin-top:12px;font-size:19px}
+form{max-width:680px;margin-top:34px;display:grid;gap:28px}
+fieldset{min-width:0}
+legend,.q{display:block;font-weight:600;font-size:19px;margin-bottom:10px}
+.opt{font-weight:400;color:#B9C6D6}
+.choices{display:flex;flex-wrap:wrap;gap:8px}
+.choices label{position:relative;cursor:pointer}
+.choices input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.choices span{display:block;padding:11px 18px;border:2px solid #4A6484;font-weight:500;background:transparent}
+.choices label:hover span{border-color:var(--gold)}
+.choices input:checked+span{background:var(--gold);border-color:var(--gold);color:var(--navy);font-weight:700}
+.choices input:focus-visible+span{outline:3px solid var(--white);outline-offset:2px}
+input[type=text],textarea{width:100%;padding:12px 14px;border:2px solid #4A6484;background:var(--deep);color:var(--white);font:inherit}
+textarea{min-height:88px;resize:vertical}
+.send{justify-self:start;border:0;background:var(--gold);color:var(--navy);font:700 20px var(--body);padding:15px 34px;cursor:pointer}
+.send:hover{background:#e3c04b}
+.send[disabled]{opacity:.6;cursor:wait}
+.msg{min-height:1.4em;font-weight:600}
+.msg.bad{color:#FFC9B8}
+.notice{max-width:680px;margin-top:26px;padding:10px 14px;border-left:4px solid var(--gold);background:var(--deep);font-size:16px}
+.thanks{margin-top:34px;font-family:var(--display);font-weight:700;font-size:44px;line-height:1.05}
+.thanks+p{margin-top:8px}
+
+footer{padding:26px 0 40px;color:var(--gray);font-size:15px}
+
+@media (max-width:820px){
+  body{font-size:17px}
+  .wrap{padding:0 18px}
+  .top{padding:26px 0 96px}
+  .top .wrap{grid-template-columns:96px 1fr;gap:16px}
+  .crest{width:96px;height:96px}
+  .class{font-size:16px}
+  h1{margin-top:2px}
+  .trips{margin-top:-70px}
+  .grid{grid-template-columns:1fr;gap:34px}
+  .trip .stops{min-height:0}
+  .why{margin-top:38px}
+  .poll{margin-top:48px;padding:46px 0 52px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <img class="crest" src="img/crest.webp" alt="Naval Academy crest with a 29th Company banner" width="190" height="190">
+    <div>
+      <div class="class">USNA Class of 1994</div>
+      <h1>29th Company Cruise</h1>
+      <p class="tag">Late August 2027. Go Hard '94!</p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="trips" aria-label="The three trips">
+    <div class="wrap">
+      <div class="grid">
+        <article class="trip">
+          <div class="shot"><img src="img/bliss.webp" alt="Norwegian Bliss at sea" style="object-position:55% 50%" width="800" height="577"><h2>Alaska</h2></div>
+          <div class="ship">Norwegian Bliss</div>
+          <div class="when">Sat Aug 28 to Sat Sep 4<br>7 nights from Seattle</div>
+          <div class="stops">Sitka, Tracy Arm, Juneau, Icy Strait Point, Ketchikan, Victoria</div>
+          <div class="price">Listed from about <b>$1,450</b> per person</div>
+        </article>
+        <article class="trip">
+          <div class="shot"><img src="img/luna.webp" alt="Norwegian Luna at sea" style="object-position:50% 40%" width="800" height="577"><h2>Bermuda</h2></div>
+          <div class="ship">Norwegian Luna</div>
+          <div class="when">Sat Aug 28 to Thu Sep 2<br>5 nights from New York</div>
+          <div class="stops">Overnight at Royal Naval Dockyard, Bermuda</div>
+          <div class="price">Listed from about <b>$1,030</b> per person</div>
+        </article>
+        <article class="trip">
+          <div class="shot"><img src="img/aqua.webp" alt="Norwegian Aqua at sea" style="object-position:50% 50%" width="800" height="533"><h2>Caribbean</h2></div>
+          <div class="ship">Norwegian Aqua</div>
+          <div class="when">Sun Aug 29 to Sun Sep 5<br>7 nights from Port Canaveral</div>
+          <div class="stops">Great Stirrup Cay, Jamaica, Grand Cayman, Cozumel</div>
+          <div class="price">Listed from about <b>$1,260</b> per person</div>
+        </article>
+      </div>
+      <p class="why">Reunions come around every five years. Let's not wait for the next one. Spouses and partners welcome.</p>
+      <a class="go" href="#poll">Take the poll</a>
+    </div>
+  </section>
+
+  <section class="poll" id="poll">
+    <div class="wrap">
+      <h2>Show of hands by December 3</h2>
+      <p class="lead">No money yet. Once I know where the group is leaning, I'll work on perks and pricing.</p>
+      <div id="done" hidden></div>
+      <form id="form" novalidate>
+        <div>
+          <label class="q" for="name">Your name</label>
+          <input type="text" id="name" name="name" autocomplete="name" required>
+        </div>
+        <fieldset>
+          <legend>Are you in?</legend>
+          <div class="choices">
+            <label><input type="radio" name="in" value="Yes"><span>Yes</span></label>
+            <label><input type="radio" name="in" value="Probably"><span>Probably</span></label>
+            <label><input type="radio" name="in" value="Maybe"><span>Maybe</span></label>
+            <label><input type="radio" name="in" value="No"><span>No</span></label>
+          </div>
+        </fieldset>
+        <div id="ifin">
+          <fieldset>
+            <legend>How many in your party, counting you?</legend>
+            <div class="choices">
+              <label><input type="radio" name="party" value="1"><span>1</span></label>
+              <label><input type="radio" name="party" value="2"><span>2</span></label>
+              <label><input type="radio" name="party" value="3"><span>3</span></label>
+              <label><input type="radio" name="party" value="4"><span>4</span></label>
+              <label><input type="radio" name="party" value="5+"><span>5+</span></label>
+            </div>
+          </fieldset>
+          <fieldset style="margin-top:28px">
+            <legend>Which trip is your first choice?</legend>
+            <div class="choices">
+              <label><input type="radio" name="pick" value="Alaska"><span>Alaska</span></label>
+              <label><input type="radio" name="pick" value="Bermuda"><span>Bermuda</span></label>
+              <label><input type="radio" name="pick" value="Caribbean"><span>Caribbean</span></label>
+            </div>
+          </fieldset>
+          <fieldset style="margin-top:28px">
+            <legend>How tied are you to that pick?</legend>
+            <div class="choices">
+              <label><input type="radio" name="tied" value="Only that one"><span>Only that one</span></label>
+              <label><input type="radio" name="tied" value="Prefer it, would do another"><span>I prefer it but I'd do another</span></label>
+              <label><input type="radio" name="tied" value="Any of them"><span>Any of them works</span></label>
+            </div>
+          </fieldset>
+          <fieldset style="margin-top:28px">
+            <legend>Would a different week work if it got more of us there?</legend>
+            <div class="choices">
+              <label><input type="radio" name="week" value="Yes"><span>Yes</span></label>
+              <label><input type="radio" name="week" value="Maybe"><span>Maybe</span></label>
+              <label><input type="radio" name="week" value="No"><span>No</span></label>
+            </div>
+          </fieldset>
+        </div>
+        <div>
+          <label class="q" for="plan">I'd be willing to help plan a trip to <span class="opt">(optional)</span></label>
+          <input type="text" id="plan" name="plan">
+        </div>
+        <div>
+          <label class="q" for="note">Anything else? <span class="opt">(optional)</span></label>
+          <textarea id="note" name="note"></textarea>
+        </div>
+        <button class="send" type="submit">Send my answers</button>
+        <div class="msg" id="msg" role="status" aria-live="polite"></div>
+      </form>
+      <p class="notice" id="notice" hidden>Preview only. This poll doesn't save answers yet.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">Ballpark only. Lowest fares listed online on 11/2/2026, double occupancy. Not a group quote. Prices and dates can change. Ship images from Norwegian Cruise Line.</div>
+</footer>
+
+<script>
+// Where answers go. Empty means preview mode: nothing is saved.
+const POLL_URL = '';
+
+const form = document.getElementById('form');
+const msg = document.getElementById('msg');
+const ifin = document.getElementById('ifin');
+const done = document.getElementById('done');
+const notice = document.getElementById('notice');
+if (!POLL_URL) notice.hidden = false;
+
+const val = n => { const f = new FormData(form).get(n); return f ? String(f).trim() : ''; };
+form.addEventListener('change', () => { ifin.hidden = val('in') === 'No'; });
+
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  msg.className = 'msg bad';
+  if (!val('name')) { msg.textContent = 'Add your name so I know who answered.'; return; }
+  if (!val('in')) { msg.textContent = "Tell me if you're in."; return; }
+  if (val('in') !== 'No' && (!val('party') || !val('pick') || !val('tied') || !val('week'))) {
+    msg.textContent = 'Answer the four questions above, then send.'; return;
+  }
+  msg.className = 'msg';
+  msg.textContent = '';
+  const btn = form.querySelector('.send');
+  const out = Object.fromEntries(new FormData(form));
+  if (POLL_URL) {
+    btn.disabled = true;
+    try {
+      await fetch(POLL_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(out) });
+    } catch (err) {
+      btn.disabled = false;
+      msg.className = 'msg bad';
+      msg.textContent = "That didn't go through. Check your connection and send again.";
+      return;
+    }
+  }
+  form.hidden = true;
+  done.hidden = false;
+  const h = document.createElement('p'); h.className = 'thanks';
+  h.textContent = 'Got it, ' + val('name').split(' ')[0] + '. Thanks!';
+  const p = document.createElement('p');
+  p.textContent = "I'll come back to everyone after December 3.";
+  done.replaceChildren(h, p);
+  done.scrollIntoView({ block: 'center' });
+});
+</script>
+</body>
+</html>
