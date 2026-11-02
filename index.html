@@ -156,6 +156,10 @@ footer{padding:26px 0 40px;color:var(--gray);font-size:15px}
           <label class="q" for="name">Your name</label>
           <input type="text" id="name" name="name" autocomplete="name" required>
         </div>
+        <div>
+          <label class="q" for="email">Your email</label>
+          <input type="email" id="email" name="email" autocomplete="email" inputmode="email" required>
+        </div>
         <fieldset>
           <legend>Are you in?</legend>
           <div class="choices">
@@ -239,6 +243,7 @@ form.addEventListener('submit', async e => {
   e.preventDefault();
   msg.className = 'msg bad';
   if (!val('name')) { msg.textContent = 'Add your name so I know who answered.'; return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('email'))) { msg.textContent = 'Add a good email so I can reach you.'; return; }
   if (!val('in')) { msg.textContent = "Tell me if you're in."; return; }
   if (val('in') !== 'No' && (!val('party') || !val('pick') || !val('tied') || !val('week'))) {
     msg.textContent = 'Answer the four questions above, then send.'; return;
