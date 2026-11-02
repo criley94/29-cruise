@@ -72,7 +72,7 @@ legend,.q{display:block;font-weight:600;font-size:19px;margin-bottom:10px}
 .choices label:hover span{border-color:var(--gold)}
 .choices input:checked+span{background:var(--gold);border-color:var(--gold);color:var(--navy);font-weight:700}
 .choices input:focus-visible+span{outline:3px solid var(--white);outline-offset:2px}
-input[type=text],textarea{width:100%;padding:12px 14px;border:2px solid #4A6484;background:var(--deep);color:var(--white);font:inherit}
+input[type=text],input[type=email],textarea{width:100%;padding:12px 14px;border:2px solid #4A6484;background:var(--deep);color:var(--white);font:inherit}
 textarea{min-height:88px;resize:vertical}
 .send{justify-self:start;border:0;background:var(--gold);color:var(--navy);font:700 20px var(--body);padding:15px 34px;cursor:pointer}
 .send:hover{background:#e3c04b}
@@ -410,30 +410,17 @@ function render(people) {
     stat(going.reduce((a, p) => a + num(p.party), 0), 'people in or probably'),
     stat(going.reduce((a, p) => a + num(p.cabins), 0), 'cabins')
   );
-  const order = { Yes: 0, Probably: 1, Maybe: 2, No: 3 };
-  const who = el('ul', 'who');
-  [...people].sort((a, b) => order[a.in] - order[b.in]).forEach(p => {
-    const li = el('li');
-    li.append(el('b', '', p.name), el('span', '', ', ' + [p.in, p.pick].filter(Boolean).join(', ')));
-    who.append(li);
-  });
   const parts = [
     big,
     bars('First choice', tally(notNo, 'pick', [['Alaska', 'Alaska'], ['Bermuda', 'Bermuda'], ['Caribbean', 'Caribbean']])),
     bars('How tied to that pick', tally(notNo, 'tied', [['Only that one', 'Only that one'], ['Prefer it, would do another', "Prefer it, would do another"], ['Any of them', 'Any of them works']])),
-    bars('Would a different week work', tally(notNo, 'week', [['Yes', 'Yes'], ['Maybe', 'Maybe'], ['No', 'No']])),
-    el('div', 'rq', "Who's answered"),
-    who
+    bars('Would a different week work', tally(notNo, 'week', [['Yes', 'Yes'], ['Maybe', 'Maybe'], ['No', 'No']]))
   ];
-  const planners = people.filter(p => p.plan);
-  if (planners.length) {
+  const places = [...new Set(people.map(p => p.plan).filter(Boolean))];
+  if (places.length) {
     const ul = el('ul', 'who');
-    planners.forEach(p => {
-      const li = el('li');
-      li.append(el('b', '', p.name), el('span', '', ', ' + p.plan));
-      ul.append(li);
-    });
-    parts.push(el('div', 'rq', 'Willing to help plan a trip to'), ul);
+    places.forEach(place => ul.append(el('li', '', place)));
+    parts.push(el('div', 'rq', 'Offers to help plan a trip to'), ul);
   }
   rbody.replaceChildren(...parts);
 }
