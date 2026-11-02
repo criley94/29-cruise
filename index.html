@@ -181,6 +181,14 @@ footer{padding:26px 0 40px;color:var(--gray);font-size:15px}
             </div>
           </fieldset>
           <fieldset style="margin-top:28px">
+            <legend>How many cabins?</legend>
+            <div class="choices">
+              <label><input type="radio" name="cabins" value="1"><span>1</span></label>
+              <label><input type="radio" name="cabins" value="2"><span>2</span></label>
+              <label><input type="radio" name="cabins" value="3+"><span>3+</span></label>
+            </div>
+          </fieldset>
+          <fieldset style="margin-top:28px">
             <legend>Which trip is your first choice?</legend>
             <div class="choices">
               <label><input type="radio" name="pick" value="Alaska"><span>Alaska</span></label>
@@ -245,8 +253,8 @@ form.addEventListener('submit', async e => {
   if (!val('name')) { msg.textContent = 'Add your name so I know who answered.'; return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('email'))) { msg.textContent = 'Add a good email so I can reach you.'; return; }
   if (!val('in')) { msg.textContent = "Tell me if you're in."; return; }
-  if (val('in') !== 'No' && (!val('party') || !val('pick') || !val('tied') || !val('week'))) {
-    msg.textContent = 'Answer the four questions above, then send.'; return;
+  if (val('in') !== 'No' && (!val('party') || !val('cabins') || !val('pick') || !val('tied') || !val('week'))) {
+    msg.textContent = 'Answer the five questions above, then send.'; return;
   }
   msg.className = 'msg';
   msg.textContent = '';
