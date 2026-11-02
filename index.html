@@ -83,6 +83,34 @@ textarea{min-height:88px;resize:vertical}
 .thanks{margin-top:34px;font-family:var(--display);font-weight:700;font-size:44px;line-height:1.05}
 .thanks+p{margin-top:8px}
 
+.ghost{display:inline-block;margin:24px 0 0 10px;background:none;border:2px solid var(--navy);color:var(--navy);font:700 20px var(--body);padding:13px 30px;cursor:pointer}
+.ghost:hover{background:var(--mist)}
+.poll .ghost{border-color:#7E97B4;color:var(--white);margin:0}
+.poll .ghost:hover{background:var(--deep)}
+.after{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.after .send{justify-self:auto}
+.again{margin-top:14px;font-size:16px;color:#B9C6D6}
+
+/* Results */
+dialog{width:min(640px,calc(100vw - 32px));max-height:88vh;padding:0;border:0;border-top:6px solid var(--gold);color:var(--navy);background:var(--white);box-shadow:0 24px 70px rgba(7,26,51,.5)}
+dialog::backdrop{background:rgba(7,26,51,.5);-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px)}
+.rhead{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 24px 12px;background:var(--white)}
+.rhead h2{font-family:var(--display);font-weight:700;font-size:40px;line-height:1}
+.x{border:0;background:none;color:var(--navy);font:700 18px var(--body);padding:8px 10px;cursor:pointer}
+.x:hover{text-decoration:underline}
+#rbody{padding:0 24px 26px}
+.big{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:6px}
+.big b{display:block;font-family:var(--display);font-weight:700;font-size:48px;line-height:1}
+.big span{font-size:15px;color:var(--gray)}
+.rq{font-weight:700;font-size:19px;margin:22px 0 8px}
+.bar{display:grid;grid-template-columns:minmax(0,190px) 1fr 28px;gap:10px;align-items:center;font-size:16px;margin:6px 0}
+.track{height:14px;background:var(--mist)}
+.track i{display:block;height:100%;background:var(--gold)}
+.bar b{text-align:right}
+.who{list-style:none;margin:0;padding:0;font-size:16px}
+.who li{padding:6px 0;border-bottom:1px solid var(--mist)}
+.who li span{color:var(--gray)}
+
 footer{padding:26px 0 40px;color:var(--gray);font-size:15px}
 
 @media (max-width:820px){
@@ -98,6 +126,8 @@ footer{padding:26px 0 40px;color:var(--gray);font-size:15px}
   .trip .stops{min-height:0}
   .why{margin-top:38px}
   .poll{margin-top:48px;padding:46px 0 52px}
+  .bar{grid-template-columns:minmax(0,130px) 1fr 24px}
+  .big b{font-size:40px}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
@@ -143,6 +173,7 @@ footer{padding:26px 0 40px;color:var(--gray);font-size:15px}
       </div>
       <p class="why">Reunions come around every five years. Let's not wait for the next one. Spouses and partners welcome.</p>
       <a class="go" href="#poll">Take the poll</a>
+      <button class="ghost" type="button" data-results>See results</button>
     </div>
   </section>
 
@@ -150,6 +181,7 @@ footer{padding:26px 0 40px;color:var(--gray);font-size:15px}
     <div class="wrap">
       <h2>Show of hands by December 3</h2>
       <p class="lead">No money yet. Once I know where the group is leaning, I'll work on perks and pricing.</p>
+      <p class="again" id="again">Change your mind later? Send it again with the same email and it replaces your old answer.</p>
       <div id="done" hidden></div>
       <form id="form" novalidate>
         <div>
@@ -229,6 +261,14 @@ footer{padding:26px 0 40px;color:var(--gray);font-size:15px}
   </section>
 </main>
 
+<dialog id="results" aria-labelledby="rtitle">
+  <div class="rhead">
+    <h2 id="rtitle">Where we stand</h2>
+    <button class="x" type="button" id="rclose">Close</button>
+  </div>
+  <div id="rbody"></div>
+</dialog>
+
 <footer>
   <div class="wrap">Ballpark only. Lowest fares listed online on 11/2/2026, double occupancy. Not a group quote. Prices and dates can change. Ship images from Norwegian Cruise Line.</div>
 </footer>
@@ -237,15 +277,63 @@ footer{padding:26px 0 40px;color:var(--gray);font-size:15px}
 // Where answers go. Empty means preview mode: nothing is saved.
 const POLL_URL = '';
 
-const form = document.getElementById('form');
-const msg = document.getElementById('msg');
-const ifin = document.getElementById('ifin');
-const done = document.getElementById('done');
-const notice = document.getElementById('notice');
+const $ = id => document.getElementById(id);
+const form = $('form'), msg = $('msg'), ifin = $('ifin'), done = $('done'), notice = $('notice');
+const dlg = $('results'), rbody = $('rbody');
+const KEY = 'cruise29-answers';
+const IN_ONLY = ['party', 'cabins', 'pick', 'tied', 'week'];
 if (!POLL_URL) notice.hidden = false;
 
 const val = n => { const f = new FormData(form).get(n); return f ? String(f).trim() : ''; };
-form.addEventListener('change', () => { ifin.hidden = val('in') === 'No'; });
+const syncIn = () => { ifin.hidden = val('in') === 'No'; };
+form.addEventListener('change', syncIn);
+
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; } },
+  set(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
+};
+
+// Put a returning person's answers back in the form.
+function fill(a) {
+  if (!a) return;
+  for (const [k, v] of Object.entries(a)) {
+    const el = form.elements[k];
+    if (!el) continue;
+    if (el instanceof RadioNodeList) { for (const r of el) r.checked = r.value === v; }
+    else el.value = v;
+  }
+  syncIn();
+}
+
+function showThanks(a, updated) {
+  form.hidden = true;
+  $('again').hidden = true;
+  notice.hidden = true;
+  done.hidden = false;
+  const h = document.createElement('p');
+  h.className = 'thanks';
+  h.textContent = (updated ? 'Updated, ' : 'Got it, ') + a.name.split(' ')[0] + '. Thanks!';
+  const p = document.createElement('p');
+  p.textContent = "I'll come back to everyone after December 3.";
+  const row = document.createElement('div');
+  row.className = 'after';
+  const see = document.createElement('button');
+  see.type = 'button'; see.className = 'send'; see.textContent = 'See results';
+  see.addEventListener('click', openResults);
+  const edit = document.createElement('button');
+  edit.type = 'button'; edit.className = 'ghost'; edit.textContent = 'Change my answers';
+  edit.addEventListener('click', () => {
+    done.hidden = true;
+    form.hidden = false;
+    $('again').hidden = false;
+    if (!POLL_URL) notice.hidden = false;
+    form.querySelector('.send').disabled = false;
+    fill(a);
+    $('name').focus();
+  });
+  row.append(see, edit);
+  done.replaceChildren(h, p, row);
+}
 
 form.addEventListener('submit', async e => {
   e.preventDefault();
@@ -253,33 +341,131 @@ form.addEventListener('submit', async e => {
   if (!val('name')) { msg.textContent = 'Add your name so I know who answered.'; return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('email'))) { msg.textContent = 'Add a good email so I can reach you.'; return; }
   if (!val('in')) { msg.textContent = "Tell me if you're in."; return; }
-  if (val('in') !== 'No' && (!val('party') || !val('cabins') || !val('pick') || !val('tied') || !val('week'))) {
+  if (val('in') !== 'No' && IN_ONLY.some(n => !val(n))) {
     msg.textContent = 'Answer the five questions above, then send.'; return;
   }
   msg.className = 'msg';
   msg.textContent = '';
   const btn = form.querySelector('.send');
   const out = Object.fromEntries(new FormData(form));
+  if (out.in === 'No') IN_ONLY.forEach(n => { delete out[n]; });
+  let updated = false;
   if (POLL_URL) {
     btn.disabled = true;
+    msg.textContent = 'Sending...';
     try {
-      await fetch(POLL_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(out) });
+      const r = await fetch(POLL_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(out) });
+      const j = await r.json();
+      if (!j.ok) throw new Error('rejected');
+      updated = j.updated;
     } catch (err) {
       btn.disabled = false;
       msg.className = 'msg bad';
       msg.textContent = "That didn't go through. Check your connection and send again.";
       return;
     }
+    msg.textContent = '';
   }
-  form.hidden = true;
-  done.hidden = false;
-  const h = document.createElement('p'); h.className = 'thanks';
-  h.textContent = 'Got it, ' + val('name').split(' ')[0] + '. Thanks!';
-  const p = document.createElement('p');
-  p.textContent = "I'll come back to everyone after December 3.";
-  done.replaceChildren(h, p);
+  store.set(out);
+  showThanks(out, updated);
   done.scrollIntoView({ block: 'center' });
 });
+
+// Results pop-up
+const el = (tag, cls, text) => {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;
+  return n;
+};
+const tally = (rows, key, labels) => labels.map(([value, label]) => [label, rows.filter(r => r[key] === value).length]);
+const bars = (title, items) => {
+  const box = document.createDocumentFragment();
+  box.append(el('div', 'rq', title));
+  const max = Math.max(1, ...items.map(i => i[1]));
+  for (const [label, n] of items) {
+    const b = el('div', 'bar');
+    const t = el('div', 'track');
+    const fill = el('i');
+    fill.style.width = (n / max * 100) + '%';
+    t.append(fill);
+    b.append(el('span', '', label), t, el('b', '', n));
+    box.append(b);
+  }
+  return box;
+};
+const num = v => parseInt(v, 10) || 0;
+
+function render(people) {
+  if (!people.length) {
+    rbody.replaceChildren(el('p', '', 'No answers yet. Be the first.'));
+    return;
+  }
+  const going = people.filter(p => p.in === 'Yes' || p.in === 'Probably');
+  const notNo = people.filter(p => p.in !== 'No');
+  const big = el('div', 'big');
+  const stat = (n, label) => { const d = el('div'); d.append(el('b', '', n), el('span', '', label)); return d; };
+  big.append(
+    stat(people.length, people.length === 1 ? 'answer so far' : 'answers so far'),
+    stat(going.reduce((a, p) => a + num(p.party), 0), 'people in or probably'),
+    stat(going.reduce((a, p) => a + num(p.cabins), 0), 'cabins')
+  );
+  const order = { Yes: 0, Probably: 1, Maybe: 2, No: 3 };
+  const who = el('ul', 'who');
+  [...people].sort((a, b) => order[a.in] - order[b.in]).forEach(p => {
+    const li = el('li');
+    li.append(el('b', '', p.name), el('span', '', ', ' + [p.in, p.pick].filter(Boolean).join(', ')));
+    who.append(li);
+  });
+  const parts = [
+    big,
+    bars('First choice', tally(notNo, 'pick', [['Alaska', 'Alaska'], ['Bermuda', 'Bermuda'], ['Caribbean', 'Caribbean']])),
+    bars('How tied to that pick', tally(notNo, 'tied', [['Only that one', 'Only that one'], ['Prefer it, would do another', "Prefer it, would do another"], ['Any of them', 'Any of them works']])),
+    bars('Would a different week work', tally(notNo, 'week', [['Yes', 'Yes'], ['Maybe', 'Maybe'], ['No', 'No']])),
+    el('div', 'rq', "Who's answered"),
+    who
+  ];
+  const planners = people.filter(p => p.plan);
+  if (planners.length) {
+    const ul = el('ul', 'who');
+    planners.forEach(p => {
+      const li = el('li');
+      li.append(el('b', '', p.name), el('span', '', ', ' + p.plan));
+      ul.append(li);
+    });
+    parts.push(el('div', 'rq', 'Willing to help plan a trip to'), ul);
+  }
+  rbody.replaceChildren(...parts);
+}
+
+async function openResults() {
+  dlg.showModal();
+  if (!POLL_URL) { rbody.replaceChildren(el('p', '', 'Results show up here once the poll is live.')); return; }
+  rbody.replaceChildren(el('p', '', 'Loading results...'));
+  try {
+    const r = await fetch(POLL_URL);
+    const j = await r.json();
+    render(j.people || []);
+  } catch (err) {
+    const p = el('p', '', "Results didn't load. ");
+    const b = el('button', 'x', 'Try again');
+    b.type = 'button';
+    b.addEventListener('click', openResults);
+    p.append(b);
+    rbody.replaceChildren(p);
+  }
+}
+
+document.querySelectorAll('[data-results]').forEach(b => b.addEventListener('click', openResults));
+$('rclose').addEventListener('click', () => dlg.close());
+dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+
+// Someone coming back on the same device sees their answers.
+const back = store.get();
+if (back) {
+  fill(back);
+  $('again').textContent = 'You already answered on this device. Change anything and send again to replace it.';
+}
 </script>
 </body>
 </html>
